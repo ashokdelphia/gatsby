@@ -23,6 +23,7 @@ import { getConfigFile } from "./get-config-file"
 const tracer = require(`opentracing`).globalTracer()
 import { preferDefault } from "./prefer-default"
 import { removeStaleJobs } from "./remove-stale-jobs"
+const reporter = require(`gatsby-cli/lib/reporter`)
 
 // Show stack trace on unhandled promises.
 process.on(`unhandledRejection`, (reason, p) => {
@@ -445,7 +446,7 @@ module.exports = async (args: BootstrapArgs) => {
   })
   activity.start()
   await require(`../utils/source-nodes`)({ parentSpan: activity.span })
-  activity.setStatus(
+  reporter.verbose(
     `Now have ${store.getState().nodes.size} nodes with ${
       store.getState().nodesByType.size
     } types: [${[...store.getState().nodesByType.entries()]
@@ -493,12 +494,12 @@ module.exports = async (args: BootstrapArgs) => {
     },
     { activity }
   )
-  activity.setStatus(
+  reporter.verbose(
     `Now have ${store.getState().nodes.size} nodes with ${
       store.getState().nodesByType.size
-    } types: [${[...store.getState().nodesByType.entries()]
-      .map(([type, nodes]) => type + `:` + nodes.size)
-      .join(`, `)}]`
+    } types, and ${
+      store.getState().nodesByType?.get(`SitePage`).size
+    } SitePage nodes`
   )
   activity.end()
 
